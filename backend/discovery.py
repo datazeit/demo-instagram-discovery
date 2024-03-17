@@ -9,7 +9,9 @@ from qdrant_client import QdrantClient, models
 from sentence_transformers import SentenceTransformer
 
 import settings
-from models import SearchQuery, Location, Product
+
+# from models import SearchQuery, Location, Product
+from models import SearchQuery, Product
 
 logger = logging.getLogger(__name__)
 
@@ -95,27 +97,27 @@ class BaseDiscoveryStrategy(abc.ABC):
     def _recommend(self, search_query: SearchQuery):
         raise NotImplementedError
 
-    def _create_location_filter(self, location: Location) -> models.Filter:
-        """
-        Create a Qdrant filter to search for the points within the specified radius from
-        the specified location.
-        :param location:
-        :return:
-        """
-        return models.Filter(
-            must=[
-                models.FieldCondition(
-                    key="cafe.location",
-                    geo_radius=models.GeoRadius(
-                        center=models.GeoPoint(
-                            lon=location.longitude,
-                            lat=location.latitude,
-                        ),
-                        radius=location.radius_km * 1000,
-                    ),
-                )
-            ]
-        )
+    # def _create_location_filter(self, location: Location) -> models.Filter:
+    #     """
+    #     Create a Qdrant filter to search for the points within the specified radius from
+    #     the specified location.
+    #     :param location:
+    #     :return:
+    #     """
+    #     return models.Filter(
+    #         must=[
+    #             models.FieldCondition(
+    #                 key="cafe.location",
+    #                 geo_radius=models.GeoRadius(
+    #                     center=models.GeoPoint(
+    #                         lon=location.longitude,
+    #                         lat=location.latitude,
+    #                     ),
+    #                     radius=location.radius_km * 1000,
+    #                 ),
+    #             )
+    #         ]
+    #     )
 
 
 class AverageVectorStrategy(BaseDiscoveryStrategy):
@@ -148,18 +150,18 @@ class AverageVectorStrategy(BaseDiscoveryStrategy):
             # API directly, so it has to be handled separately
             return self._handle_negative_ids(search_query)
 
-        query_filter = (
-            self._create_location_filter(search_query.location)
-            if search_query.location is not None
-            else None
-        )
+        # query_filter = (
+        #     self._create_location_filter(search_query.location)
+        #     if search_query.location is not None
+        #     else None
+        # )
         response = self.qdrant_client.recommend_groups(
             settings.QDRANT_COLLECTION,
             positive=positive,
             negative=negative,
             strategy=search_query.strategy,
-            group_by=settings.GROUP_BY_FIELD,
-            query_filter=query_filter,
+            # group_by=settings.GROUP_BY_FIELD,
+            # query_filter=query_filter,
             limit=search_query.limit,
         )
         return list(
@@ -193,16 +195,16 @@ class AverageVectorStrategy(BaseDiscoveryStrategy):
         mean_vector = np.mean(disliked_vectors, axis=0)
         negated_vector = -mean_vector
 
-        query_filter = (
-            self._create_location_filter(search_query.location)
-            if search_query.location is not None
-            else None
-        )
+        # query_filter = (
+        #     self._create_location_filter(search_query.location)
+        #     if search_query.location is not None
+        #     else None
+        # )
         response = self.qdrant_client.search_groups(
             settings.QDRANT_COLLECTION,
             query_vector=negated_vector.tolist(),
-            group_by=settings.GROUP_BY_FIELD,
-            query_filter=query_filter,
+            # group_by=settings.GROUP_BY_FIELD,
+            # query_filter=query_filter,
             limit=search_query.limit,
         )
         return list(
@@ -226,18 +228,18 @@ class BestScoreStrategy(BaseDiscoveryStrategy):
         """
         queries = search_query.queries or []
         query_vectors = self.embedding_model.encode(queries).tolist()
-        query_filter = (
-            self._create_location_filter(search_query.location)
-            if search_query.location is not None
-            else None
-        )
+        # query_filter = (
+        #     self._create_location_filter(search_query.location)
+        #     if search_query.location is not None
+        #     else None
+        # )
         response = self.qdrant_client.recommend_groups(
             settings.QDRANT_COLLECTION,
             positive=(search_query.positive + query_vectors),
             negative=search_query.negative,
             strategy=search_query.strategy,
-            group_by=settings.GROUP_BY_FIELD,
-            query_filter=query_filter,
+            # group_by=settings.GROUP_BY_FIELD,
+            # query_filter=query_filter,
             limit=search_query.limit,
         )
         return list(

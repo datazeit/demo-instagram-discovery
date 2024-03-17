@@ -9,17 +9,17 @@ import settings
 ProductId = Union[int, str]
 
 
-class Location(BaseModel):
-    latitude: float
-    longitude: float
+# class Location(BaseModel):
+#     latitude: float
+#     longitude: float
 
 
-class LocationFilter(Location):
-    radius_km: float
+# class LocationFilter(Location):
+#     radius_km: float
 
 
 class SearchQuery(BaseModel):
-    location: Optional[LocationFilter] = None
+    # location: Optional[LocationFilter] = None
     positive: Optional[List[ProductId]] = None
     negative: Optional[List[ProductId]] = None
     queries: Optional[List[str]] = None
@@ -30,7 +30,7 @@ class SearchQuery(BaseModel):
 class Restaurant(BaseModel):
     name: str
     rating: Optional[float]
-    location: Location
+    # location: Location
     slug: Optional[str] = None
     address: Optional[str] = None
 
@@ -46,14 +46,14 @@ class Product(BaseModel):
 
     @classmethod
     def from_point(cls, point) -> "Product":
-        location = Location(
-            latitude=point.payload["cafe"]["location"]["lat"],
-            longitude=point.payload["cafe"]["location"]["lon"],
-        )
+        # location = Location(
+        #     latitude=point.payload["cafe"]["location"]["lat"],
+        #     longitude=point.payload["cafe"]["location"]["lon"],
+        # )
         restaurant = Restaurant(
             name=point.payload["cafe"]["name"],
             rating=point.payload["cafe"]["rating"],
-            location=location,
+            # location=location,
             slug=point.payload["cafe"]["slug"],
             address=point.payload["cafe"]["address"],
         )

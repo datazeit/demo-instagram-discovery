@@ -37,10 +37,12 @@ client = QdrantClient(
     prefer_grpc=True,
 )
 
+
+model = "clip-ViT-B-32"
+
 # Load the embeddings model
-model = SentenceTransformer(
-    "clip-ViT-B-32", device="cpu", cache_folder="./models_cache"
-)
+model = SentenceTransformer(model, device="cpu", cache_folder="./models_cache")
+
 
 # Map each search strategy to the corresponding class
 strategy_mapping = {
